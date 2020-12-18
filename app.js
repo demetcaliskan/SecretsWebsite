@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
-const GoogleStrategy  = require('passport-google-oauth20').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 
 const app = express();
@@ -62,7 +62,9 @@ passport.use(new GoogleStrategy({
     userProfileURL: 'https://www.googleapis.com/oauth2/v3/userinfo'
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    User.findOrCreate({
+      googleId: profile.id
+    }, function(err, user) {
       return cb(err, user);
     });
   }
@@ -73,23 +75,33 @@ app.get("/", function(req, res) {
 });
 
 app.get("/auth/google",
-  passport.authenticate("google", {scope: ["profile"] }));
+  passport.authenticate("google", {
+    scope: ["profile"]
+  }));
 
 app.get('/auth/google/secrets',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    failureRedirect: '/login'
+  }),
   function(req, res) {
     // Successful authentication, redirect home.
     res.redirect('/secrets');
   });
 
 app.get("/secrets", function(req, res) {
-  User.find({"secret": {$ne:null}}, function(err, foundUser) {
-    if(err) {
+  User.find({
+    "secret": {
+      $ne: null
+    }
+  }, function(err, foundUser) {
+    if (err) {
       console.log(err);
     } else {
-        if(foundUser) {
-          res.render("secrets", {usersWithSecrets: foundUser});
-        }
+      if (foundUser) {
+        res.render("secrets", {
+          usersWithSecrets: foundUser
+        });
+      }
     }
   });
 });
@@ -106,14 +118,14 @@ app.post("/submit", function(req, res) {
   const submittedSecret = req.body.secret;
 
   User.findById(req.user.id, function(err, foundUser) {
-    if(err) {
+    if (err) {
       console.log(err);
     } else {
-        if(foundUser) {
-          foundUser.secret = submittedSecret;
-          foundUser.save();
-          res.redirect("secrets");
-        }
+      if (foundUser) {
+        foundUser.secret = submittedSecret;
+        foundUser.save();
+        res.redirect("secrets");
+      }
     }
   });
 
